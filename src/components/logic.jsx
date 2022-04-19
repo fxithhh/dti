@@ -6,6 +6,10 @@ import GameInstructions from "../components/gameinstructions";
 
 import Chessboard from "chessboardjsx";
 
+import { db } from ".././firebase"
+import { uid } from "uid";
+import { set, ref, update } from "../../node_modules/firebase/database";
+
 class HumanVsHuman extends Component {
   static propTypes = { children: PropTypes.func };
 
@@ -21,8 +25,8 @@ class HumanVsHuman extends Component {
     square: "",
     // array of past game moves
     history: [],
-    teamTurn: "White's Turn!",
-    position:[]
+    teamTurn: "Orange's Turn!",
+    position: []
   };
 
   componentDidMount() {
@@ -69,7 +73,7 @@ class HumanVsHuman extends Component {
     // console.log("game over", this.game.in_check())
     let team = this.game.get(sourceSquare)
     // let check = this.game.in_check()
-
+    console.log("team", team)
     // see if the move is legal
     let move = this.game.move({
       from: sourceSquare,
@@ -79,10 +83,10 @@ class HumanVsHuman extends Component {
 
     //change turns
     if (team.color === "w" && move !== null) {
-      this.setState(({ teamTurn: "Black's Turn!" }))
+      this.setState(({ teamTurn: "Blue's Turn!" }))
     } else if (team.color === "b" && move !== null) {
-      this.setState(({ teamTurn: "White's Turn!" }))
-    } 
+      this.setState(({ teamTurn: "Orange's Turn!" }))
+    }
 
     // illegal move
     if (move === null) return;
@@ -94,6 +98,28 @@ class HumanVsHuman extends Component {
 
     //record moves history
     console.log("history", this.game.history({ verbose: true }))
+
+    //to database
+    const historyDb = this.game.history({ verbose: true })
+    const latestMoveObj = historyDb.slice(-1)
+    const latestTo = latestMoveObj.map(toPos => toPos.to).toString()
+    const latestFrom = latestMoveObj.map(fromPos => fromPos.from).toString()
+
+    const path = ['a1', 'b1', 'c1', 'd1', 'e1', 'f1', 'g1', 'h1', 'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2', 'a3', 'b3', 'c3', 'd3', 'e3', 'f3', 'g3', 'h3', 'a4', 'b4', 'c4', 'd4', 'e4', 'f4', 'g4', 'h4', 'a5', 'b5', 'c5', 'd5', 'e5', 'f5', 'g5', 'h5', 'a6', 'b6', 'c6', 'd6', 'e6', 'f6', 'g6', 'h6', 'a7', 'b7', 'c7', 'd7', 'e7', 'f7', 'g7', 'h7', 'a8', 'b8', 'c8', 'd8', 'e8', 'f8', 'g8', 'h8']
+    //update to database
+    const latestFromNumber = path.indexOf(latestFrom)
+    const latestToNumber = path.indexOf(latestTo)
+
+    console.log(latestFromNumber, latestToNumber)
+
+    const setToGreen = 3
+    update(ref(db, `/Main/`), {
+      [latestFromNumber]: setToGreen,
+    })
+    update(ref(db, `/Main/`), {
+      [latestToNumber]: setToGreen,
+    })
+
   };
 
   getPosition = (position) => {
@@ -104,8 +130,8 @@ class HumanVsHuman extends Component {
 
     //change turns
     if (check === true) {
-      this.setState(({ teamTurn: "Check!" }))
-    } 
+      this.setState(({ teamTurn: "Checkmate!" }))
+    }
   }
 
   // onSquareClick = square => {
@@ -181,7 +207,7 @@ class HumanVsHuman extends Component {
     const { fen, dropSquareStyle, squareStyles, teamTurn, history } = this.state;
 
     return <>
-      <h2 className={teamTurn === "White's Turn!" ? "text-white text-2xl font-semibold mb-4" : "text-black text-2xl font-semibold mb-4"}>{teamTurn}</h2>
+      <h2 className={teamTurn === "Orange's Turn!" ? "text-amber-500 text-2xl font-bold mb-4" : "text-sky-500 text-2xl font-bold mb-4"}>{teamTurn}</h2>
       {this.props.children({
         squareStyles,
         position: fen,
@@ -196,7 +222,7 @@ class HumanVsHuman extends Component {
         getPosition: this.getPosition
       })}
       <br></br>
-      <GameInstructions history = {history}/>
+      <GameInstructions history={history} />
     </>
   }
 }

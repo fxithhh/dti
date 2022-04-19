@@ -21,8 +21,8 @@ function Chessboard() {
   };
 
   return (
-    <div className="h-screen bg-sky-300 flex flex-col justify-center items-center">
-      <h2 className="font-semibold text-4xl">You are on <br></br> <span className={state.team === "White" ? "font-bold text-white": "font-bold text-black"}>Team {state.team}!</span></h2>
+    <div className="h-screen bg-main-blue flex flex-col justify-center items-center">
+      <h2 className="font-semibold text-white text-4xl uppercase">You're on the <br></br><span className={state.team === "Orange" ? "font-bold text-amber-400": "font-bold text-sky-500"}>{state.team}</span> Team</h2>
       <div style={boardsContainer}>
         <ChessLogic> {({ position, onDrop }) => (
             <Chessboard
